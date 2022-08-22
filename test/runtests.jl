@@ -3,7 +3,7 @@ using Anneal
 using DWaveNeal
 
 function main()
-    Anneal.@test_optimizer DWaveNeal.Optimizer
+    Anneal.test(DWaveNeal.Optimizer)
 end
 
 main() # Here we go!

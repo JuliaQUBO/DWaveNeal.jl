@@ -1,11 +1,9 @@
 module DWaveNeal
 
-using Anneal
+import Anneal
 using PythonCall
 using MathOptInterface
 const MOI = MathOptInterface
-const VI = MOI.VariableIndex
-const ROW = MOI.RawOptimizerAttribute
 
 # -*- :: Python D-Wave Simulated Annealing :: -*- #
 const neal = PythonCall.pynew() # initially NULL
@@ -14,65 +12,65 @@ function __init__()
     PythonCall.pycopy!(neal, pyimport("neal"))
 end
 
-mutable struct Optimizer{T} <: Anneal.AbstractSampler{T}
-    x::Dict{VI, Int}
-    y::Dict{Int, VI}
-    s::T
-    Q::Dict{Tuple{Int, Int}, T}
-    c::T
-
-    attrs::Dict{String, Any}
-
-    function Optimizer{T}() where T
-        new{T}(
-            Dict{VI, Int}(),
-            Dict{Int, VI}(),
-            one(T),
-            Dict{Tuple{Int, Int}, T}(),
-            zero(T),
-            Dict{String, Any}(),
-        )
+Anneal.@anew Optimizer begin
+    name = "D-Wave Neal Simulated Annealing Sampler"
+    version = v"0.5.8"
+    attributes = begin
+        "num_reads"::Integer = 1_000
+        "num_sweeps"::Integer = 1_000
+        "num_sweeps_per_beta"::Integer = 1
+        "beta_range"::Union{Tuple{Float64,Float64},Nothing} = nothing
+        "beta_schedule"::Union{Vector,Nothing} = nothing
+        "beta_schedule_type"::Union{String,Nothing} = nothing
+        "seed"::Union{Integer,Nothing} = nothing
+        "initial_states_generator"::Union{String,Nothing} = nothing
+        "interrupt_function"::Union{Function,Nothing} = nothing
     end
 end
 
-# -*- :: Attributes :: -*- #
-# --> Raw attribute fallback
-function raw_attr_str(::MOI.AbstractOptimizerAttribute)::String end
-MOI.get(annealer::Optimizer, attr::MOI.AbstractOptimizerAttribute) = MOI.get(annealer, ROW(raw_attr_str(attr)))
-MOI.get(annealer::Optimizer, attr::ROW) = MOI.get(annealer, attr, Val(attr.value))
-MOI.set(annealer::Optimizer, attr::ROW, value::Any) = MOI.set(annealer, attr, Val(attr.value), value)
+function Anneal.sample(sampler::Optimizer{T}) where {T}
+    # ~ Retrieve Ising Model ~ #
+    _, α, h, J, β = Anneal.ising(sampler)
 
-struct NumberOfReads <: MOI.AbstractOptimizerAttribute end
-raw_attr(::NumberOfReads) = "num_reads"
-MOI.get(annealer::Optimizer, ::ROW, ::Val{"num_reads"}) = (annealer.attrs["num_reads"]::Integer)
-MOI.set(annealer::Optimizer, ::ROW, ::Val{"num_reads"}, value::Integer) = (annealer.attrs["num_reads"] = value)
+    # ~ Instantiate Sampler (Python) ~ #
+    neal_sampler = neal.SimulatedAnnealingSampler()
 
-struct NumberOfSweeps <: MOI.AbstractOptimizerAttribute end
-raw_attr(::NumberOfReads) = "num_sweeps"
-MOI.get(annealer::Optimizer, ::ROW, ::Val{"num_sweeps"}) = (annealer.attrs["num_sweeps"]::Integer)
-MOI.set(annealer::Optimizer, ::ROW, ::Val{"num_sweeps"}, value::Integer) = (annealer.attrs["num_sweeps"] = value)
+    # ~ Retrieve Optimizer Attributes ~ #
+    params = Dict{Symbol,Any}(
+        :num_reads => MOI.get(sampler, MOI.RawOptimizerAttribute("num_reads")),
+        :num_sweeps => MOI.get(sampler, MOI.RawOptimizerAttribute("num_sweeps")),
+        :num_sweeps_per_beta => MOI.get(sampler, MOI.RawOptimizerAttribute("num_sweeps_per_beta")),
+        :beta_range => MOI.get(sampler, MOI.RawOptimizerAttribute("beta_range")),
+        :beta_schedule => MOI.get(sampler, MOI.RawOptimizerAttribute("beta_schedule")),
+        :beta_schedule_type => MOI.get(sampler, MOI.RawOptimizerAttribute("beta_schedule_type")),
+        :seed => MOI.get(sampler, MOI.RawOptimizerAttribute("seed")),
+        :initial_states_generator => MOI.get(sampler, MOI.RawOptimizerAttribute("initial_states_generator")),
+        :interrupt_function => MOI.get(sampler, MOI.RawOptimizerAttribute("interrupt_function")),
+    )
 
-# -*- :: Anneal.jl Interface :: -*- #
-MOI.get(annealer::Optimizer, ::Anneal.x) = annealer.x
-MOI.get(annealer::Optimizer, ::Anneal.y) = annealer.y
-MOI.get(annealer::Optimizer, ::Anneal.Q) = annealer.Q
-MOI.get(annealer::Optimizer, ::Anneal.c) = annealer.c
+    # ~ Sample! ~ #
+    results = @timed neal_sampler.sample_ising(h, J; params...)
+    
+    # ~ Basic Data Formatting ~ #
+    records = results.value.record
+    samples = Anneal.Sample{Int,T}[
+        Anneal.Sample{Int,T}(
+            pyconvert.(Int, ψ),        # state
+            pyconvert(Int, n),         # reads
+            α * (pyconvert(T, e) + β), # value
+        )
+        for (ψ, e, n) in records
+    ]
 
-function Anneal.sample(annealer::Optimizer{T}) where T
-    s, Q, c = Anneal.qubo_normal_form(annealer)
-    sampler = neal.SimulatedAnnealingSampler()
-    records = sampler.sample_qubo(
-        s * Q,
-        num_reads = MOI.get(annealer, ROW("num_reads")),
-        num_sweeps = MOI.get(annealer, ROW("num_sweeps")),
-    ).record
-    samples = [(
-        pyconvert.(Int, ψ),
-        pyconvert(Int, n),
-        pyconvert(T, e) + c,
-    ) for (ψ, e, n) in records]
+    # ~ Write metadata ~ #
+    metadata = Dict{String,Any}(
+        "time" => Dict{String,Any}(
+            "sample" => results.time
+        )
+    )
 
-    return samples
+    # ~ Build SampleSet ~ #
+    return Anneal.SampleSet{Int,T}(samples, metadata)
 end
 
 end # module
