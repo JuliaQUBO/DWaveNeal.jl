@@ -28,6 +28,18 @@ Anneal.@anew Optimizer begin
     end
 end
 
+const PARAMS = [
+    :num_reads,
+    :num_sweeps,
+    :num_sweeps_per_beta,
+    :beta_range,
+    :beta_schedule,
+    :beta_schedule_type,
+    :seed,
+    :initial_states_generator,
+    :interrupt_function,
+]
+
 function Anneal.sample(sampler::Optimizer{T}) where {T}
     # ~ Retrieve Ising Model ~ #
     _, α, h, J, β = Anneal.ising(sampler)
@@ -37,15 +49,11 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
 
     # ~ Retrieve Optimizer Attributes ~ #
     params = Dict{Symbol,Any}(
-        :num_reads => MOI.get(sampler, MOI.RawOptimizerAttribute("num_reads")),
-        :num_sweeps => MOI.get(sampler, MOI.RawOptimizerAttribute("num_sweeps")),
-        :num_sweeps_per_beta => MOI.get(sampler, MOI.RawOptimizerAttribute("num_sweeps_per_beta")),
-        :beta_range => MOI.get(sampler, MOI.RawOptimizerAttribute("beta_range")),
-        :beta_schedule => MOI.get(sampler, MOI.RawOptimizerAttribute("beta_schedule")),
-        :beta_schedule_type => MOI.get(sampler, MOI.RawOptimizerAttribute("beta_schedule_type")),
-        :seed => MOI.get(sampler, MOI.RawOptimizerAttribute("seed")),
-        :initial_states_generator => MOI.get(sampler, MOI.RawOptimizerAttribute("initial_states_generator")),
-        :interrupt_function => MOI.get(sampler, MOI.RawOptimizerAttribute("interrupt_function")),
+        param => MOI.get(
+            sampler,
+            MOI.RawOptimizerAttribute(string(param))
+        )
+        for param in PARAMS
     )
 
     # ~ Sample! ~ #
