@@ -42,7 +42,7 @@ const PARAMS = [
 
 function Anneal.sample(sampler::Optimizer{T}) where {T}
     # ~ Retrieve Ising Model ~ #
-    _, α, h, J, β = Anneal.ising(sampler)
+    _, α, Q, β = Anneal.qubo(sampler)
 
     # ~ Instantiate Sampler (Python) ~ #
     neal_sampler = neal.SimulatedAnnealingSampler()
@@ -57,7 +57,7 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
     )
 
     # ~ Sample! ~ #
-    results = @timed neal_sampler.sample_ising(h, J; params...)
+    results = @timed neal_sampler.sample_qubo(Q; params...)
     
     # ~ Basic Data Formatting ~ #
     records = results.value.record
