@@ -1,5 +1,5 @@
 # DWaveNeal.jl
-DWave Neal Simulated Annealing Interface for JuMP
+D-Wave Neal Simulated Annealing Interface for JuMP
 
 ```julia
 julia> import Pkg; Pkg.add("DWaveNeal")
@@ -15,7 +15,8 @@ using DWaveNeal
 ```julia
 model = Model(DWaveNeal.Optimizer)
 
-n = size(Q, 1)
+n = 3
+Q = 2 * rand(n, n) .- 1.0 # Q[i, j] in [-1, 1]
 
 @variable(model, x[1:n], Bin)
 @objective(model, Min, x' * Q * x)
