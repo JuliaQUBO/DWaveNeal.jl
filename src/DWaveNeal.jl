@@ -21,9 +21,9 @@ Anneal.@anew Optimizer begin
         "num_sweeps_per_beta"::Integer = 1
         "beta_range"::Union{Tuple{Float64,Float64},Nothing} = nothing
         "beta_schedule"::Union{Vector,Nothing} = nothing
-        "beta_schedule_type"::Union{String,Nothing} = nothing
+        "beta_schedule_type"::String = "geometric"
         "seed"::Union{Integer,Nothing} = nothing
-        "initial_states_generator"::Union{String,Nothing} = nothing
+        "initial_states_generator"::String = "random"
         "interrupt_function"::Union{Function,Nothing} = nothing
     end
 end
@@ -42,7 +42,7 @@ const PARAMS = [
 
 function Anneal.sample(sampler::Optimizer{T}) where {T}
     # ~ Retrieve Ising Model ~ #
-    _, α, Q, β = Anneal.qubo(sampler)
+    _, Q, α, β = Anneal.qubo(sampler)
 
     # ~ Instantiate Sampler (Python) ~ #
     neal_sampler = neal.SimulatedAnnealingSampler()
