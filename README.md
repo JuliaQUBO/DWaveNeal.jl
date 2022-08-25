@@ -24,10 +24,10 @@ Q = 2 * rand(n, n) .- 1.0 # Q[i, j] in [-1, 1]
 optimize!(model)
 
 for i = 1:result_count(model)
-    x = value.(model; result = i)
-    y = objective_value(model; result = i)
+    x_i = value.(model[:x]; result = i)
+    y_i = objective_value(model; result = i)
 
-    println("f($(x)) = $(y)")
+    println("[$i] f($(x_i)) = $(y_i)")
 end
 ```
 
