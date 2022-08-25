@@ -1,5 +1,5 @@
 # DWaveNeal.jl
-D-Wave Neal Simulated Annealing Interface for JuMP
+[D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) Simulated Annealing Interface for JuMP via [Anneal.jl](https://github.com/psrenergy/Anneal.jl).
 
 ```julia
 julia> import Pkg; Pkg.add("DWaveNeal")
