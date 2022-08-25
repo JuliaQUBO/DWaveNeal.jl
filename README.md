@@ -1,18 +1,18 @@
 # DWaveNeal.jl
 [D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) Simulated Annealing Interface for JuMP via [Anneal.jl](https://github.com/psrenergy/Anneal.jl).
 
+## Installation
 ```julia
 julia> import Pkg; Pkg.add("DWaveNeal")
 
 julia> using DWaveNeal
 ```
 
+## Getting started
 ```julia
 using JuMP
 using DWaveNeal
-```
 
-```julia
 model = Model(DWaveNeal.Optimizer)
 
 n = 3
