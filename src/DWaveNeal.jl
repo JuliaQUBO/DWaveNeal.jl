@@ -14,7 +14,7 @@ end
 
 Anneal.@anew Optimizer begin
     name = "D-Wave Neal Simulated Annealing Sampler"
-    version = v"0.5.8"
+    version = v"0.5.9"
     attributes = begin
         "num_reads"::Integer = 1_000
         "num_sweeps"::Integer = 1_000
