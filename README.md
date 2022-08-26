@@ -16,7 +16,9 @@ using DWaveNeal
 model = Model(DWaveNeal.Optimizer)
 
 n = 3
-Q = 2 * rand(n, n) .- 1.0 # Q[i, j] in [-1, 1]
+Q = [ -1  2  2
+       2 -1  2
+       2  2 -1 ]
 
 @variable(model, x[1:n], Bin)
 @objective(model, Min, x' * Q * x)
