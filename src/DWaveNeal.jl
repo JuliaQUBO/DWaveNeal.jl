@@ -41,13 +41,16 @@ const PARAMS = [
 ]
 
 function Anneal.sample(sampler::Optimizer{T}) where {T}
-    # ~ Retrieve Ising Model ~ #
-    _, Q, α, β = Anneal.qubo(sampler)
+    # ~*~ Retrieve Ising Model ~*~ #
+    Q, α, β = Anneal.qubo(sampler)
 
-    # ~ Instantiate Sampler (Python) ~ #
+    # ~*~ Timing Information ~*~ #
+    time_data = Dict{String,Any}()
+
+    # ~*~ Instantiate Sampler (Python) ~*~ #
     neal_sampler = neal.SimulatedAnnealingSampler()
 
-    # ~ Retrieve Optimizer Attributes ~ #
+    # ~*~ Retrieve Optimizer Attributes ~*~ #
     params = Dict{Symbol,Any}(
         param => MOI.get(
             sampler,
@@ -56,28 +59,31 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
         for param in PARAMS
     )
 
-    # ~ Sample! ~ #
-    results = @timed neal_sampler.sample_qubo(Q; params...)
-    
-    # ~ Basic Data Formatting ~ #
-    records = results.value.record
-    samples = Anneal.Sample{Int,T}[
-        Anneal.Sample{Int,T}(
-            pyconvert.(Int, ψ),        # state
-            pyconvert(Int, n),         # reads
-            α * (pyconvert(T, e) + β), # value
-        )
-        for (ψ, e, n) in records
-    ]
+    samples = let results = @timed neal_sampler.sample_qubo(Q; params...)
+        time_data["sampling"] = results.time
 
-    # ~ Write metadata ~ #
+        # ~ Data Formatting ~ #
+        records = results.value.record
+
+        Anneal.Sample{Int,T}[
+            Anneal.Sample{Int,T}(
+                # state:
+                pyconvert.(Int, ψ),
+                # reads:
+                pyconvert(Int, k),        
+                # value: 
+                α * (pyconvert(T, e) + β),
+            )
+            for (ψ, e, k) in records
+        ]
+    end
+
+    # ~*~ Write metadata ~*~ #
     metadata = Dict{String,Any}(
-        "time" => Dict{String,Any}(
-            "sample" => results.time
-        )
+        "time"   => time_data,
+        "origin" => "D-Wave Neal"
     )
 
-    # ~ Build SampleSet ~ #
     return Anneal.SampleSet{Int,T}(samples, metadata)
 end
 
