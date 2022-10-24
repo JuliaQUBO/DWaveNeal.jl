@@ -11,8 +11,10 @@ function __init__()
 end
 
 Anneal.@anew Optimizer begin
-    name = "D-Wave Neal Simulated Annealing Sampler"
-    version = v"0.5.9"
+    name       = "D-Wave Neal Simulated Annealing Sampler"
+    sense      = :min
+    domain     = :bool
+    version    = v"0.5.9"
     attributes = begin
         "num_reads"::Integer = 1_000
         "num_sweeps"::Integer = 1_000
@@ -42,9 +44,6 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
     # ~*~ Retrieve Ising Model ~*~ #
     Q, α, β = Anneal.qubo(sampler, Dict, T)
 
-    # ~*~ Instantiate Sampler (Python) ~*~ #
-    neal_sampler = neal.SimulatedAnnealingSampler()
-
     # ~*~ Retrieve Optimizer Attributes ~*~ #
     params = Dict{Symbol,Any}(
         param => MOI.get(
@@ -55,25 +54,12 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
     )
 
     # ~*~ Call D-Wave Neal API ~*~ #
-    result = @timed neal_sampler.sample_qubo(Q; params...)
-    record = result.value.record
-
-    # ~*~ Convert Samples ~*~ #
-    samples = [
-        Anneal.Sample{T}(
-            # state:
-            pyconvert.(Int, ψ),
-            # value: 
-            α * (pyconvert(T, λ) + β),
-            # reads:
-            pyconvert(Int, r),        
-        )
-        for (ψ, λ, r) in record
-    ]
+    results = @timed neal_sample(Q, α, β; params...)
+    samples = results.value
 
     # ~*~ Timing Information ~*~ #
     time_data = Dict{String,Any}(
-        "effective" => result.time
+        "effective" => results.time
     )
 
     # ~*~ Write metadata ~*~ #
@@ -83,6 +69,24 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
     )
 
     return Anneal.SampleSet{T}(samples, metadata)
+end
+
+function neal_sample(Q::Dict{Tuple{Int,Int},T}, α::T, β::T; params...) where {T}
+    sampler = neal.SimulatedAnnealingSampler()
+    records = sampler.sample_qubo(Q; params...).record
+    samples = [
+        Anneal.Sample{T,Int}(
+            # state:
+            pyconvert.(Int, ψ),
+            # value: 
+            α * (pyconvert(T, λ) + β),
+            # reads:
+            pyconvert(Int, r),        
+        )
+        for (ψ, λ, r) in records
+    ]
+    
+    return samples
 end
 
 end # module
