@@ -1,9 +1,7 @@
 module DWaveNeal
 
-import Anneal
+using Anneal
 using PythonCall
-using MathOptInterface
-const MOI = MathOptInterface
 
 # -*- :: Python D-Wave Simulated Annealing :: -*- #
 const neal = PythonCall.pynew() # initially NULL
@@ -42,10 +40,7 @@ const PARAMS = [
 
 function Anneal.sample(sampler::Optimizer{T}) where {T}
     # ~*~ Retrieve Ising Model ~*~ #
-    Q, α, β = Anneal.qubo(sampler)
-
-    # ~*~ Timing Information ~*~ #
-    time_data = Dict{String,Any}()
+    Q, α, β = Anneal.qubo(sampler, Dict, T)
 
     # ~*~ Instantiate Sampler (Python) ~*~ #
     neal_sampler = neal.SimulatedAnnealingSampler()
@@ -59,24 +54,27 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
         for param in PARAMS
     )
 
-    samples = let results = @timed neal_sampler.sample_qubo(Q; params...)
-        time_data["sampling"] = results.time
+    # ~*~ Call D-Wave Neal API ~*~ #
+    result = @timed neal_sampler.sample_qubo(Q; params...)
+    record = result.value.record
 
-        # ~ Data Formatting ~ #
-        records = results.value.record
+    # ~*~ Convert Samples ~*~ #
+    samples = [
+        Anneal.Sample{T}(
+            # state:
+            pyconvert.(Int, ψ),
+            # value: 
+            α * (pyconvert(T, λ) + β),
+            # reads:
+            pyconvert(Int, r),        
+        )
+        for (ψ, λ, r) in record
+    ]
 
-        Anneal.Sample{Int,T}[
-            Anneal.Sample{Int,T}(
-                # state:
-                pyconvert.(Int, ψ),
-                # reads:
-                pyconvert(Int, k),        
-                # value: 
-                α * (pyconvert(T, e) + β),
-            )
-            for (ψ, e, k) in records
-        ]
-    end
+    # ~*~ Timing Information ~*~ #
+    time_data = Dict{String,Any}(
+        "effective" => result.time
+    )
 
     # ~*~ Write metadata ~*~ #
     metadata = Dict{String,Any}(
@@ -84,7 +82,7 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
         "origin" => "D-Wave Neal"
     )
 
-    return Anneal.SampleSet{Int,T}(samples, metadata)
+    return Anneal.SampleSet{T}(samples, metadata)
 end
 
 end # module
