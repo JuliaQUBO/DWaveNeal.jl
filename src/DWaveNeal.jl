@@ -26,7 +26,7 @@ Anneal.@anew Optimizer begin
     end
 end
 
-const PARAMS = [
+const PARAM_LIST = [
     :num_reads,
     :num_sweeps,
     :num_sweeps_per_beta,
@@ -51,7 +51,7 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
             sampler,
             MOI.RawOptimizerAttribute(string(param))
         )
-        for param in PARAMS
+        for param in PARAM_LIST
     )
 
     # ~*~ Call D-Wave Neal API ~*~ #
