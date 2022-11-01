@@ -16,15 +16,15 @@ Anneal.@anew Optimizer begin
     domain     = :bool
     version    = v"0.5.9"
     attributes = begin
-        "num_reads"::Integer = 1_000
-        "num_sweeps"::Integer = 1_000
-        "num_sweeps_per_beta"::Integer = 1
+        "num_reads"::Integer                                = 1_000
+        "num_sweeps"::Integer                               = 1_000
+        "num_sweeps_per_beta"::Integer                      = 1
         "beta_range"::Union{Tuple{Float64,Float64},Nothing} = nothing
-        "beta_schedule"::Union{Vector,Nothing} = nothing
-        "beta_schedule_type"::String = "geometric"
-        "seed"::Union{Integer,Nothing} = nothing
-        "initial_states_generator"::String = "random"
-        "interrupt_function"::Union{Function,Nothing} = nothing
+        "beta_schedule"::Union{Vector,Nothing}              = nothing
+        "beta_schedule_type"::String                        = "geometric"
+        "seed"::Union{Integer,Nothing}                      = nothing
+        "initial_states_generator"::String                  = "random"
+        "interrupt_function"::Union{Function,Nothing}       = nothing
     end
 end
 
