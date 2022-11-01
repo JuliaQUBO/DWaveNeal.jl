@@ -9,7 +9,7 @@ MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 
 [compat]
-Anneal = "0.5"
+Anneal = "0.5.4"
 MathOptInterface = "1.7"
 PythonCall = "0.9"
 julia = "1.6"
