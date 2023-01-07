@@ -1,7 +1,4 @@
 channels = ["anaconda", "conda-forge"]
 
-[deps]
-python = ">=3.7,<=3.8"
-
 [pip.deps]
-dwave-neal = "==0.5.9"
+dwave-neal = "==0.6.0"
