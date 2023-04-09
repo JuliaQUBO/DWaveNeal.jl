@@ -1,7 +1,8 @@
 # DWaveNeal.jl
 [![DOI](https://zenodo.org/badge/506537248.svg)](https://zenodo.org/badge/latestdoi/506537248)
+[![QUBODRIVERS](https://img.shields.io/badge/Powered%20by-QUBODrivers.jl-%20%234063d8)](https://github.com/psrenergy/QUBODrivers.jl)
 
-[D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) Simulated Annealing Interface for JuMP via [Anneal.jl](https://github.com/psrenergy/Anneal.jl).
+[D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) Simulated Annealing Interface for JuMP
 
 ## Installation
 ```julia
@@ -28,10 +29,10 @@ Q = [ -1  2  2
 optimize!(model)
 
 for i = 1:result_count(model)
-    x_i = value.(model[:x]; result = i)
-    y_i = objective_value(model; result = i)
+    xi = value.(model[:x]; result = i)
+    yi = objective_value(model; result = i)
 
-    println("[$i] f($(x_i)) = $(y_i)")
+    println("[$i] f($(xi)) = $(yi)")
 end
 ```
 

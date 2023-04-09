@@ -1,15 +1,12 @@
-name    = "DWaveNeal"
-uuid    = "870cdf72-5502-4b10-839c-127ceab78f22"
+name = "DWaveNeal"
+uuid = "870cdf72-5502-4b10-839c-127ceab78f22"
 authors = ["Pedro Maciel Xavier <pedroxavier@psr-inc.com.br>"]
-version = "0.3.1"
+version = "0.4.0"
 
 [deps]
-Anneal           = "e4d9eb7f-b088-426e-aeb5-1c0dae3d8abb"
-MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-PythonCall       = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
+QUBODrivers = "a3f166f7-2cd3-47b6-9e1e-6fbfe0449eb0"
 
 [compat]
-Anneal           = "0.6"
-MathOptInterface = "1.7"
-PythonCall       = "0.9"
-julia            = "1.6"
+PythonCall = "0.9.12"
+julia = "1.6"

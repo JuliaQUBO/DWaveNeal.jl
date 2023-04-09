@@ -1,7 +1,15 @@
 module DWaveNeal
 
-using Anneal # Exports MOI
 using PythonCall
+import QUBODrivers:
+    MOI,
+    QUBODrivers,
+    QUBOTools,
+    Sample,
+    SampleSet,
+    @setup,
+    sample,
+    qubo
 
 # -*- :: Python D-Wave Simulated Annealing :: -*- #
 const neal = PythonCall.pynew() # initially NULL
@@ -22,7 +30,7 @@ const _DWAVE_NEAL_ATTR_LIST = [
     :interrupt_function,
 ]
 
-Anneal.@anew Optimizer begin
+@setup Optimizer begin
     name       = "D-Wave Neal Simulated Annealing Sampler"
     sense      = :min
     domain     = :bool
@@ -46,24 +54,24 @@ end
 D-Wave's Simulated Annealing Sampler for QUBO and Ising models.
 """ Optimizer
 
-function Anneal.sample(sampler::Optimizer{T}) where {T}
-    # ~*~ Retrieve Ising Model ~*~ #
-    Q, α, β = Anneal.qubo(sampler, Dict)
+function sample(sampler::Optimizer{T}) where {T}
+    # Retrieve Ising Model
+    Q, α, β = qubo(sampler, Dict)
 
-    # ~*~ Retrieve Optimizer Attributes ~*~ #
+    # Retrieve Optimizer Attributes
     params = Dict{Symbol,Any}(
         param => MOI.get(sampler, MOI.RawOptimizerAttribute(string(param)))
         for param in _DWAVE_NEAL_ATTR_LIST
     )
 
-    # ~*~ Call D-Wave Neal API ~*~ #
+    # Call D-Wave Neal API
     sampler = neal.SimulatedAnnealingSampler()
     results = @timed sampler.sample_qubo(Q; params...)
     records = results.value.record
 
-    # ~*~ Format Samples ~*~ #
+    # Format Samples
     samples = [
-        Anneal.Sample{T,Int}(
+        Sample{T}(
             # state:
             pyconvert.(Int, ψ),
             # value: 
@@ -73,7 +81,7 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
         ) for (ψ, λ, r) in records
     ]
 
-    # ~*~ Write metadata ~*~ #
+    # Write metadata
     metadata = Dict{String,Any}(
         "origin" => "D-Wave Neal",
         "time"   => Dict{String,Any}(
@@ -81,7 +89,7 @@ function Anneal.sample(sampler::Optimizer{T}) where {T}
         ),
     )
 
-    return Anneal.SampleSet{T}(samples, metadata)
+    return SampleSet{T}(samples, metadata)
 end
 
 end # module

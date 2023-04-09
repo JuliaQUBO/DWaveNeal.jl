@@ -1,4 +1,3 @@
-using Test
-using DWaveNeal
+using DWaveNeal: MOI, QUBODrivers, DWaveNeal
 
-DWaveNeal.test(; examples=true)
+QUBODrivers.test(DWaveNeal.Optimizer)
