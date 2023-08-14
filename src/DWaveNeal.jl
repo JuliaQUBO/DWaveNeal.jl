@@ -52,32 +52,51 @@ end
     DWaveNeal.Optimizer{T}()
 
 D-Wave's Simulated Annealing Sampler for QUBO and Ising models.
-""" Optimizer
+"""
+Optimizer
 
 function sample(sampler::Optimizer{T}) where {T}
-    # Retrieve Ising Model
+    # Retrieve QUBO Model
     Q, α, β = qubo(sampler, Dict)
 
-    # Retrieve Optimizer Attributes
+    # Retrieve Optimizer attributes
+    n = MOI.get(sampler, MOI.NumberOfVariables())
+
+    # Solver-specific attributes
     params = Dict{Symbol,Any}(
         param => MOI.get(sampler, MOI.RawOptimizerAttribute(string(param)))
         for param in _DWAVE_NEAL_ATTR_LIST
     )
 
-    n = MOI.get(sampler, MOI.NumberOfVariables())
 
     # Call D-Wave Neal API
     sampler = neal.SimulatedAnnealingSampler()
     results = @timed sampler.sample_qubo(Q; params...)
+    var_map = pyconvert.(Int, results.value.variables)
 
     # Format Samples
     samples = Vector{Sample{T,Int}}()
 
-    for ϕ in results.value.samples()
-        # Complete state
-        ψ = [pyconvert(Int, get(ϕ, i, 0)) for i = 1:n]
-        λ = QUBOTools.value(Q, ψ, α, β)
-        s = Sample{T}(ψ, λ)
+    for (ϕ, λ, r) in results.value.record
+        # dwave-neal will not consider variables that are not present
+        # in the objective funcion, leading to holes with respect to
+        # the indices in the record table.
+        # Therefore, it is necessary to introduce an extra layer of
+        # indirection to account for the missing variables.
+        ψ = zeros(Int, n)
+
+        for (i, v) in enumerate(ϕ)
+            ψ[var_map[i]] = pyconvert(Int, v)
+        end
+
+        s = Sample{T,Int}(
+            # state:
+            ψ,
+            # energy:
+            α * (pyconvert(T, λ) + β),
+            # reads:
+            pyconvert(Int, r),
+        )
         
         push!(samples, s)
     end
@@ -90,7 +109,7 @@ function sample(sampler::Optimizer{T}) where {T}
         ),
     )
 
-    return SampleSet{T}(samples, metadata)
+    return SampleSet{T,Int}(samples, metadata)
 end
 
 end # module
