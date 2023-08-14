@@ -64,22 +64,23 @@ function sample(sampler::Optimizer{T}) where {T}
         for param in _DWAVE_NEAL_ATTR_LIST
     )
 
+    n = MOI.get(sampler, MOI.NumberOfVariables())
+
     # Call D-Wave Neal API
     sampler = neal.SimulatedAnnealingSampler()
     results = @timed sampler.sample_qubo(Q; params...)
-    records = results.value.record
 
     # Format Samples
-    samples = [
-        Sample{T}(
-            # state:
-            pyconvert.(Int, ψ),
-            # value: 
-            α * (pyconvert(T, λ) + β),
-            # reads:
-            pyconvert(Int, r),
-        ) for (ψ, λ, r) in records
-    ]
+    samples = Vector{Sample{T,Int}}()
+
+    for ϕ in results.value.samples()
+        # Complete state
+        ψ = [pyconvert(Int, get(ϕ, i, 0)) for i = 1:n]
+        λ = QUBOTools.value(Q, ψ, α, β)
+        s = Sample{T}(ψ, λ)
+        
+        push!(samples, s)
+    end
 
     # Write metadata
     metadata = Dict{String,Any}(
