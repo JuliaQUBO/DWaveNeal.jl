@@ -1,6 +1,10 @@
 # DWaveNeal.jl
+> :warning: Warning This package was archived. Consider using [DWave.jl](https://github.com/psrenergy/DWave.jl) instead.
+
+
 [![DOI](https://zenodo.org/badge/506537248.svg)](https://zenodo.org/badge/latestdoi/506537248)
 [![QUBODRIVERS](https://img.shields.io/badge/Powered%20by-QUBODrivers.jl-%20%234063d8)](https://github.com/psrenergy/QUBODrivers.jl)
+
 
 [D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) Simulated Annealing Interface for JuMP
 
