@@ -1,6 +1,9 @@
 name = "DWaveNeal"
 uuid = "870cdf72-5502-4b10-839c-127ceab78f22"
-authors = ["Pedro Maciel Xavier <pedroxavier@psr-inc.com.br>"]
+authors = [
+    "Pedro Maciel Xavier <pedroxavier@psr-inc.com.br>",
+    "David E. Bernal Neira <dbernaln@purdue.edu>",
+]
 version = "0.5.0"
 
 [deps]
