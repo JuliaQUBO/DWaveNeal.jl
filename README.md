@@ -1,26 +1,40 @@
 # DWaveNeal.jl
-> :warning: Warning This package was archived. Consider using [DWave.jl](https://github.com/psrenergy/DWave.jl) instead.
+> :warning: Deprecated compatibility package. New code should use [DWave.jl](https://github.com/JuliaQUBO/DWave.jl) and `DWave.Neal.Optimizer` directly.
 
 
 [![DOI](https://zenodo.org/badge/506537248.svg)](https://zenodo.org/badge/latestdoi/506537248)
 [![QUBODRIVERS](https://img.shields.io/badge/Powered%20by-QUBODrivers.jl-%20%234063d8)](https://github.com/psrenergy/QUBODrivers.jl)
 
 
-[D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) Simulated Annealing Interface for JuMP
+[D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) compatibility layer for JuMP.
 
 ## Installation
 ```julia
-julia> import Pkg; Pkg.add("DWaveNeal")
+julia> import Pkg
+
+julia> Pkg.add("DWave")
+
+julia> using DWave
+```
+
+For existing environments that still depend on `DWaveNeal`, the compatibility package remains available:
+
+```julia
+julia> import Pkg
+
+julia> Pkg.add("DWaveNeal")
 
 julia> using DWaveNeal
 ```
 
+`DWaveNeal.Optimizer` is an alias for `DWave.Neal.Optimizer` and will emit a deprecation warning on load.
+
 ## Getting started
 ```julia
 using JuMP
-using DWaveNeal
+using DWave
 
-model = Model(DWaveNeal.Optimizer)
+model = Model(DWave.Neal.Optimizer)
 
 n = 3
 Q = [ -1  2  2
@@ -40,6 +54,6 @@ for i = 1:result_count(model)
 end
 ```
 
-**Note**: _The D-Wave Neal wrapper for Julia is not officially supported by D-Wave Systems. If you are a commercial customer interested in official support for Julia from DWave, let them know!_
+Legacy code that still does `Model(DWaveNeal.Optimizer)` should continue to work after upgrading to this package version.
 
-**Note**: _If you are using `DWaveNeal.jl` in your project, we recommend you to include the `.CondaPkg` entry in your `.gitignore` file. The `PythonCall` module will place a lot of files in this folder when building its Python environment._
+**Note**: _The D-Wave Julia wrappers are not officially supported by D-Wave Systems. If you are a commercial customer interested in official support for Julia from D-Wave, let them know._
