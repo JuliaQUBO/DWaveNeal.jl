@@ -4,11 +4,11 @@ authors = [
     "Pedro Maciel Xavier <pedroxavier@psr-inc.com.br>",
     "David E. Bernal Neira <dbernaln@purdue.edu>",
 ]
-version = "0.5.0"
+version = "0.5.1"
 
 [deps]
 DWave = "4d534982-bf11-4157-9e48-fe3a62208a50"
 
 [compat]
-DWave = "0.5.2"
+DWave = "0.5.2, 0.6"
 julia = "1.10"

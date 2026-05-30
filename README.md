@@ -3,10 +3,15 @@
 
 
 [![DOI](https://zenodo.org/badge/506537248.svg)](https://zenodo.org/badge/latestdoi/506537248)
-[![QUBODRIVERS](https://img.shields.io/badge/Powered%20by-QUBODrivers.jl-%20%234063d8)](https://github.com/psrenergy/QUBODrivers.jl)
+[![QUBODRIVERS](https://img.shields.io/badge/Powered%20by-QUBODrivers.jl-%20%234063d8)](https://github.com/JuliaQUBO/QUBODrivers.jl)
 
 
 [D-Wave Neal](https://docs.ocean.dwavesys.com/projects/neal/en/latest/) compatibility layer for JuMP.
+
+## Maintenance status
+This package is maintained only as a compatibility shim for existing
+`DWaveNeal.jl` users. New sampler features, bug fixes, and interface work should
+happen in [DWave.jl](https://github.com/JuliaQUBO/DWave.jl).
 
 ## Installation
 ```julia
